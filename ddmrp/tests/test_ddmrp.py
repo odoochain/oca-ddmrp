@@ -873,3 +873,8 @@ class TestDdmrp(TestDdmrpCommon):
         self.assertTrue(self.buffer_a.ddmrp_chart)
         self.assertTrue(self.buffer_a.ddmrp_demand_chart)
         self.assertTrue(self.buffer_a.ddmrp_supply_chart)
+
+    def test_50_dlt_extra_lead_time(self):
+        # Add extra lead time
+        self.buffer_c_blue.extra_lead_time = 20
+        self.assertEqual(self.buffer_c_blue.dlt, 25)
