@@ -1619,7 +1619,7 @@ class StockBuffer(models.Model):
     @api.model
     def cron_ddmrp_adu(self, automatic=False):
         """calculate ADU for each DDMRP buffer. Called by cronjob."""
-        auto_commit = not getattr(threading.currentThread(), "testing", False)
+        auto_commit = not getattr(threading.current_thread(), "testing", False)
         _logger.info("Start cron_ddmrp_adu.")
         buffer_ids = self.search([]).ids
         i = 0
