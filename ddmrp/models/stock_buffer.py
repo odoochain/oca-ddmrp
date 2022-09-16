@@ -1168,8 +1168,8 @@ class StockBuffer(models.Model):
             "name": _("Non-completed Moves"),
             "type": "ir.actions.act_window",
             "res_model": "stock.move",
-            "view_type": "form",
-            "views": views,
+            # "view_type": "form",
+            "views": [[False, "form"]],
             "view_mode": "tree,form",
             "domain": str([("id", "in", lines.ids)]),
         }
@@ -1685,7 +1685,7 @@ class StockBuffer(models.Model):
     def cron_ddmrp(self, automatic=False):
         """Calculate key DDMRP parameters for each buffer.
         Called by cronjob."""
-        auto_commit = not getattr(threading.currentThread(), "testing", False)
+        auto_commit = not getattr(threading.current_thread(), "testing", False)
         _logger.info("Start cron_ddmrp.")
         buffer_ids = self.search([]).ids
         i = 0
