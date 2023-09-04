@@ -34,6 +34,8 @@ class MrpBom(models.Model):
         domain = [("product_id", "=", product.id)]
         if self.location_id:
             domain.append(("location_id", "=", self.location_id.id))
+        if self.company_id:
+            domain.append(("company_id", "=", self.company_id.id))
         return domain
 
     @api.depends("product_id", "product_tmpl_id", "location_id")
@@ -52,6 +54,10 @@ class MrpBom(models.Model):
         for bom in self:
             bom.is_buffered = True if bom.buffer_id else False
 
+    def _get_produce_delay(self):
+        self.ensure_one()
+        return self.product_id.produce_delay or self.product_tmpl_id.produce_delay
+
     def _get_longest_path(self):
         if not self.bom_line_ids:
             return 0.0
@@ -68,11 +74,7 @@ class MrpBom(models.Model):
                     lambda bom: bom.location_id == location
                 ) or line_boms.filtered(lambda bom: not bom.location_id)
                 if bom:
-                    produce_delay = (
-                        bom[0].product_id.produce_delay
-                        or bom[0].product_tmpl_id.produce_delay
-                    )
-                    paths[i] += produce_delay
+                    paths[i] += bom[0]._get_produce_delay()
                     paths[i] += bom[0]._get_longest_path()
                 else:
                     _logger.info(
@@ -96,7 +98,7 @@ class MrpBom(models.Model):
         """Computes the Decoupled Lead Time exploding all the branches of the
         BOM until a buffered position and then selecting the greatest."""
         self.ensure_one()
-        dlt = self.product_id.produce_delay or self.product_tmpl_id.produce_delay
+        dlt = self._get_produce_delay()
         dlt += self._get_longest_path()
         return dlt
 
@@ -128,6 +130,8 @@ class MrpBomLine(models.Model):
         domain = [("product_id", "=", product.id)]
         if self.location_id:
             domain.append(("location_id", "=", self.location_id.id))
+        if self.company_id:
+            domain.append(("company_id", "=", self.company_id.id))
         return domain
 
     def _compute_is_buffered(self):
